@@ -1,27 +1,33 @@
-
-async function checkSpeed() {
-  const url = document.getElementById('urlInput').value;
-  const resultDiv = document.getElementById('result');
+document.getElementById("checkBtn").addEventListener("click", () => {
+  const url = document.getElementById("urlInput").value.trim();
+  const resultDiv = document.getElementById("result");
 
   if (!url) {
-    resultDiv.innerHTML = '❌ Please enter a valid URL.';
+    resultDiv.innerHTML = "❗ Please enter a valid URL.";
     return;
   }
 
-  resultDiv.innerHTML = '⏳ Checking...';
+  const apiKey = "AIzaSyAPN4mvYxrRYCO_B7qKJE7Ze10Gp-JSbkE";
+  const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&strategy=mobile&key=${apiKey}`;
 
-  try {
-    const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&strategy=mobile`;
-    const response = await fetch(apiUrl);
-    const data = await response.json();
+  resultDiv.innerHTML = "⏳ Checking speed, please wait...";
 
-    if (data.lighthouseResult) {
+  fetch(apiUrl)
+    .then((response) => response.json())
+    .then((data) => {
       const score = data.lighthouseResult.categories.performance.score * 100;
-      resultDiv.innerHTML = `📊 Mobile Speed Score: <strong>${score}</strong>/100`;
-    } else {
-      resultDiv.innerHTML = '❌ Could not fetch speed score. Please try again.';
-    }
-  } catch (error) {
-    resultDiv.innerHTML = '❌ Error fetching data.';
-  }
-}
+      let color = "green";
+      if (score < 50) color = "red";
+      else if (score < 80) color = "orange";
+
+      resultDiv.innerHTML = `
+        <div style="font-size: 22px;">
+          📊 Mobile Speed Score: <strong style="color: ${color};">${score}/100</strong>
+        </div>
+      `;
+    })
+    .catch((error) => {
+      resultDiv.innerHTML = "❌ Error fetching score. Please try again.";
+    });
+});
+
